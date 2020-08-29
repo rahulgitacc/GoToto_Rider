@@ -4,4 +4,9 @@
     <color name="colorPrimaryDark">#1B3147</color>
     <color name="colorAccent">#3498db</color>
   <color name="splashBackground">#fff</color>
+  <color name="goTotowhite">#fff</color>
+  <color name="goTotoPrimary">#1C4258</color>
+  <color name="goTotoAccentColor">#EE861F</color>
+  <color name="goTotoPrimaryDark">#102A38</color>
+  <color name="goTotoAccentClick">#A25508</color>
 </resources>
