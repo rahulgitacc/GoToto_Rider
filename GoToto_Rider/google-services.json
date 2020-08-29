@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "75238668857",
+    "firebase_url": "https://go-toto.firebaseio.com",
+    "project_id": "go-toto",
+    "storage_bucket": "go-toto.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:75238668857:android:9b7eae220ffb76295aebe8",
+        "android_client_info": {
+          "package_name": "com.companyname.gototo_rider"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "75238668857-lv02fgllppc3ivrt60fsauda5asp298e.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.companyname.gototo_rider",
+            "certificate_hash": "ff99419d2b6c1c349dcf10d92a9e8cde095a3506"
+          }
+        },
+        {
+          "client_id": "75238668857-0fk1ibi4pg4te9mo9848jf6g12s8onc3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAAZ5JqcviM30nmGt0R5iYkVUsR8Jiikjc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "75238668857-0fk1ibi4pg4te9mo9848jf6g12s8onc3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
