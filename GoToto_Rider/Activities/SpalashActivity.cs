@@ -4,7 +4,7 @@ using Android.OS;
 
 namespace GoToto_Rider.Activities
 {
-    [Activity(Label = "@String/app_name", Theme = "@style/MyTheme.Splash", MainLauncher = false, NoHistory = true, ScreenOrientation = Android.Content.PM.ScreenOrientation.Portrait )]
+    [Activity(Label = "@String/app_name", Theme = "@style/MyTheme.Splash", MainLauncher = true, NoHistory = true, ScreenOrientation = Android.Content.PM.ScreenOrientation.Portrait )]
     public class SpalashActivity : Activity
     {
         protected override void OnCreate(Bundle savedInstanceState)
@@ -17,7 +17,7 @@ namespace GoToto_Rider.Activities
         protected override void OnResume()
         {
             base.OnResume();
-            StartActivity(typeof(MainActivity));
+            StartActivity(typeof(RegisterationActivity));
         }
     }
 }
