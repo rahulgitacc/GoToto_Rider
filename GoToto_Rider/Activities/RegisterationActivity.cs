@@ -16,6 +16,7 @@ using Firebase;
 using Firebase.Auth;
 using Firebase.Database;
 using GoToto_Rider.EventListeners;
+using Java.Util;
 
 namespace GoToto_Rider.Activities
 {
@@ -32,7 +33,10 @@ namespace GoToto_Rider.Activities
         FirebaseAuth mAuth;
         FirebaseDatabase database;
         TaskCompletionListener TaskCompletionListener = new TaskCompletionListener();
+        string fullname, phone, email, password;
 
+        ISharedPreferences preferences = Application.Context.GetSharedPreferences("userinfo", FileCreationMode.Private);
+        ISharedPreferencesEditor editor;
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -57,8 +61,6 @@ namespace GoToto_Rider.Activities
 
         private void RegisterButton_Click(object sender, EventArgs e)
         {
-            string fullname, phone, email, password;
-
             fullname = fullNameText.EditText.Text;
             phone = phoneText.EditText.Text;
             email = emailText.EditText.Text;
@@ -129,6 +131,30 @@ namespace GoToto_Rider.Activities
         private void TaskCompletionListener_Success(object sender, EventArgs e)
         {
             Snackbar.Make(rootView, "User Registration was Successful", Snackbar.LengthShort).Show();
+
+            HashMap userMap = new HashMap();
+            userMap.Put("email", email);
+            userMap.Put("phone", phone);
+            userMap.Put("fullname", fullname);
+
+            DatabaseReference userReference = database.GetReference("users/" + mAuth.CurrentUser.Uid);
+            userReference.SetValue(userMap);
+        }
+
+        void SaveToSharedPreference()
+        {
+            editor = preferences.Edit();
+
+            editor.PutString("email", email);
+            editor.PutString("fullname", fullname);
+            editor.PutString("phone", phone);
+
+            editor.Apply();
+        }
+
+        void RetriveData()
+        {
+            string email = preferences.GetString("email", "");
         }
     }
 }
