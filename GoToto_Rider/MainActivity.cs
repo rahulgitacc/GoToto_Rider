@@ -20,8 +20,6 @@ namespace GoToto_Rider
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.activity_main);
-            btnTestConnection = (Button)FindViewById(Resource.Id.mybutton);
-            btnTestConnection.Click += BtnTestConnecion_Click;
         }
 
         private void BtnTestConnecion_Click(object sender, EventArgs e)

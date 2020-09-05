@@ -18,4 +18,10 @@
     <item name="colorPrimaryDark">@color/goTotoPrimaryDark</item>
     <item name="colorAccent">@color/goTotoAccentColor</item>
   </style>
+
+  <style name="NavigationStyle" parent="Theme.AppCompat.Light.NoActionBar">
+    <item name="colorPrimary">@color/goTotoAccentColor</item>
+    <item name="colorPrimaryDark">@color/goTotoAccentColor</item>
+    <item name="colorAccent">@color/goTotoAccentColor</item>
+  </style>
 </resources>

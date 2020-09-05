@@ -29,6 +29,7 @@ namespace GoToto_Rider.Activities
         TextInputLayout passwordText;
         CoordinatorLayout rootView;
         Button registerButton;
+        TextView clickToLoginText;
 
         FirebaseAuth mAuth;
         FirebaseDatabase database;
@@ -55,8 +56,16 @@ namespace GoToto_Rider.Activities
             passwordText = (TextInputLayout)FindViewById(Resource.Id.passwordText);
             rootView = (CoordinatorLayout)FindViewById(Resource.Id.rootView);
             registerButton = (Button)FindViewById(Resource.Id.registerButton);
+            clickToLoginText = (TextView)FindViewById(Resource.Id.clickToLogin);
 
+            clickToLoginText.Click += ClickToLoginText_Click;
             registerButton.Click += RegisterButton_Click;
+        }
+
+        private void ClickToLoginText_Click(object sender, EventArgs e)
+        {
+            StartActivity(typeof(LoginActivity));
+            Finish();
         }
 
         private void RegisterButton_Click(object sender, EventArgs e)

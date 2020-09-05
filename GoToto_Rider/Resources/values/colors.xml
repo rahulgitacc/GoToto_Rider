@@ -9,4 +9,5 @@
   <color name="goTotoAccentColor">#EE861F</color>
   <color name="goTotoPrimaryDark">#102A38</color>
   <color name="goTotoAccentClick">#A25508</color>
+  <color name="goTotoAsh">#e2e2e2</color>
 </resources>

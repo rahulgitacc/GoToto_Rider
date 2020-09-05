@@ -37,9 +37,16 @@ namespace GoToto_Rider.Activities
             passwordText = (TextInputLayout)FindViewById(Resource.Id.passwordText);
             rootView = (CoordinatorLayout)FindViewById(Resource.Id.rootView);
             loginButton = (Button)FindViewById(Resource.Id.loginButton);
+            clickToRegisterText = (TextView)FindViewById(Resource.Id.clickToRegisterText);
 
+            clickToRegisterText.Click += ClickToRegisterText_Click;
             loginButton.Click += LoginButton_Click;
             InitializeFirebase();
+        }
+
+        private void ClickToRegisterText_Click(object sender, EventArgs e)
+        {
+            StartActivity(typeof(RegisterationActivity));
         }
 
         private void LoginButton_Click(object sender, EventArgs e)
