@@ -11,9 +11,11 @@ using Android.Gms.Maps;
 using Android.Gms.Maps.Model;
 using Android;
 using Android.Support.V4.App;
-using Android.Content.PM;
 using Android.Gms.Location;
 using GoToto_Rider.Helpers;
+using Android.Content;
+using Google.Places;
+using System.Collections.Generic;
 
 namespace GoToto_Rider
 {
@@ -25,6 +27,14 @@ namespace GoToto_Rider
         Android.Support.V4.Widget.DrawerLayout drawerLayout;
 
         GoogleMap mainMap;
+
+        //TextViews
+        TextView pickupLocationText;
+        TextView destinationText;
+
+        //Layouts
+        RelativeLayout layoutPickUp;
+        RelativeLayout layoutDestination;
 
         readonly string[] permissionGroupLocation = { Manifest.Permission.AccessFineLocation, Manifest.Permission.AccessCoarseLocation };
         const int requestLocationId = 0;
@@ -51,12 +61,15 @@ namespace GoToto_Rider
             CreateLocationRequest();
             GetMyLocation();
             StartLocationUpdates();
+            InitializePlaces();
         }
 
         void ConnectControl()
         {
+            //DrawerLayout
             drawerLayout = (Android.Support.V4.Widget.DrawerLayout)FindViewById(Resource.Id.drawerLayout);
 
+            //ToolBar
             mainToolbar = (Android.Support.V7.Widget.Toolbar)FindViewById(Resource.Id.mainToolbar);
             SetSupportActionBar(mainToolbar);
             SupportActionBar.Title = "";
@@ -64,6 +77,47 @@ namespace GoToto_Rider
             actionBar.SetHomeAsUpIndicator(Resource.Mipmap.ic_menu_action);
             actionBar.SetDisplayHomeAsUpEnabled(true);
 
+            //TextView 
+            pickupLocationText = (TextView)FindViewById(Resource.Id.pickupLocationText);
+            destinationText = (TextView)FindViewById(Resource.Id.destinationText);
+
+            //Layouts
+            layoutPickUp = (RelativeLayout)FindViewById(Resource.Id.layoutPickUp);
+            layoutDestination = (RelativeLayout)FindViewById(Resource.Id.layoutDestination);
+
+            layoutPickUp.Click += LayoutPickUp_Click;
+            layoutDestination.Click += LayoutDestination_Click;
+        }
+
+        void LayoutPickUp_Click(object sender, System.EventArgs e)
+        {
+            List<Place.Field> field = new List<Place.Field>();
+            field.Add(Place.Field.Id);
+            field.Add(Place.Field.Name);
+            field.Add(Place.Field.LatLng);
+            field.Add(Place.Field.Address);
+
+            Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.Overlay, field)
+                .SetCountry("IN")
+                .Build(this);
+
+            StartActivityForResult(intent, 1);
+        }
+
+        void LayoutDestination_Click(object sender, System.EventArgs e)
+        {
+
+            List<Place.Field> field = new List<Place.Field>();
+            field.Add(Place.Field.Id);
+            field.Add(Place.Field.Name);
+            field.Add(Place.Field.LatLng);
+            field.Add(Place.Field.Address);
+
+            Intent intent = new Autocomplete.IntentBuilder(AutocompleteActivityMode.Overlay, field)
+                .SetCountry("IN")
+                .Build(this);
+
+            StartActivityForResult(intent, 2);
         }
 
         public override bool OnOptionsItemSelected(IMenuItem item)
@@ -186,6 +240,40 @@ namespace GoToto_Rider
             if (CheckLocationPermission())
             {
                 locationClient.RequestLocationUpdates(mLocationRequest, mLocationCallback, null);
+            }
+        }
+
+        protected override void OnActivityResult(int requestCode, [GeneratedEnum] Result resultCode, Intent data)
+        {
+            base.OnActivityResult(requestCode, resultCode, data);
+
+            if (requestCode == 1)
+            {
+                if (resultCode == Result.Ok)
+                {
+                    var place = Autocomplete.GetPlaceFromIntent(data);
+                    pickupLocationText.Text = place.Name.ToString();
+                    mainMap.AnimateCamera(CameraUpdateFactory.NewLatLngZoom(place.LatLng, 15));
+                }
+            }
+
+            if (requestCode == 2)
+            {
+                if (resultCode == Result.Ok)
+                {
+                    var place = Autocomplete.GetPlaceFromIntent(data);
+                    destinationText.Text = place.Name.ToString();
+                    mainMap.AnimateCamera(CameraUpdateFactory.NewLatLngZoom(place.LatLng, 15));
+                }
+            }
+        }
+
+        void InitializePlaces()
+        {
+            var mapkey = Resources.GetString(Resource.String.mapkey);
+            if (!PlacesApi.IsInitialized)
+            {
+                PlacesApi.Initialize(this, mapkey);
             }
         }
     }
