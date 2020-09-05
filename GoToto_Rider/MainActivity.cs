@@ -16,6 +16,7 @@ using GoToto_Rider.Helpers;
 using Android.Content;
 using Google.Places;
 using System.Collections.Generic;
+using Android.Graphics;
 
 namespace GoToto_Rider
 {
@@ -32,6 +33,13 @@ namespace GoToto_Rider
         TextView pickupLocationText;
         TextView destinationText;
 
+        //Buttons
+        RadioButton pickupRadio;
+        RadioButton destinationRadio;
+
+        //Imageview
+        ImageView centerMarker;
+
         //Layouts
         RelativeLayout layoutPickUp;
         RelativeLayout layoutDestination;
@@ -47,6 +55,18 @@ namespace GoToto_Rider
         static int UPDATE_INTERVAL = 5; //5 SECONDS
         static int FASTEST_INTERVAL = 5;
         static int DISPLACEMENT = 3; //meters
+
+        //Helpers
+        MapFunctionHelper mapHelper;
+
+        //TripDetails
+        LatLng pickupLocationLatlng;
+        LatLng destinationLatLng;
+
+
+        //Flags
+        int addressRequest = 1;
+        bool takeAddressFromSearch;
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -81,12 +101,38 @@ namespace GoToto_Rider
             pickupLocationText = (TextView)FindViewById(Resource.Id.pickupLocationText);
             destinationText = (TextView)FindViewById(Resource.Id.destinationText);
 
+            pickupRadio = (RadioButton)FindViewById(Resource.Id.pickupRadio);
+            destinationRadio = (RadioButton)FindViewById(Resource.Id.DestinationRadio);
+            pickupRadio.Click += PickupRadio_Click;
+            destinationRadio.Click += DestinationRadio_Click;
+
             //Layouts
             layoutPickUp = (RelativeLayout)FindViewById(Resource.Id.layoutPickUp);
             layoutDestination = (RelativeLayout)FindViewById(Resource.Id.layoutDestination);
 
             layoutPickUp.Click += LayoutPickUp_Click;
             layoutDestination.Click += LayoutDestination_Click;
+
+            //Imageview
+            centerMarker = (ImageView)FindViewById(Resource.Id.centerMarker);
+        }
+
+        private void DestinationRadio_Click(object sender, EventArgs e)
+        {
+            addressRequest = 1;
+            pickupRadio.Checked = true;
+            destinationRadio.Checked = false;
+            takeAddressFromSearch = false;
+            centerMarker.SetColorFilter(Color.DarkGreen);
+        }
+
+        private void PickupRadio_Click(object sender, EventArgs e)
+        {
+            addressRequest = 2;
+            destinationRadio.Checked = true;
+            pickupRadio.Checked = false;
+            takeAddressFromSearch = false;
+            centerMarker.SetColorFilter(Color.Red);
         }
 
         void LayoutPickUp_Click(object sender, System.EventArgs e)
@@ -181,6 +227,26 @@ namespace GoToto_Rider
         {
             bool success = googleMap.SetMapStyle(MapStyleOptions.LoadRawResourceStyle(this, Resource.Raw.silvermapstyle));
             mainMap = googleMap;
+            mainMap.CameraIdle += MainMap_CameraIdle;
+            string mapkey = Resources.GetString(Resource.String.mapkey);
+            mapHelper = new MapFunctionHelper(mapkey);
+        }
+
+        private async void MainMap_CameraIdle(object sender, EventArgs e)
+        {
+            if (!takeAddressFromSearch)
+            {
+                if (addressRequest == 1)
+                {
+                    pickupLocationLatlng = mainMap.CameraPosition.Target;
+                    pickupLocationText.Text = await mapHelper.FindCordinateAddress(pickupLocationLatlng);
+                }
+                else if (addressRequest == 2)
+                {
+                    destinationLatLng = mainMap.CameraPosition.Target;
+                    destinationText.Text = await mapHelper.FindCordinateAddress(destinationLatLng);
+                }
+            }
         }
 
         bool CheckLocationPermission()
@@ -243,27 +309,37 @@ namespace GoToto_Rider
             }
         }
 
-        protected override void OnActivityResult(int requestCode, [GeneratedEnum] Result resultCode, Intent data)
+        protected override void OnActivityResult(int requestCode, [GeneratedEnum] Android.App.Result resultCode, Intent data)
         {
             base.OnActivityResult(requestCode, resultCode, data);
 
             if (requestCode == 1)
             {
-                if (resultCode == Result.Ok)
+                if (resultCode == Android.App.Result.Ok)
                 {
+                    takeAddressFromSearch = true;
+                    pickupRadio.Checked = false;
+                    destinationRadio.Checked = false;
+
                     var place = Autocomplete.GetPlaceFromIntent(data);
                     pickupLocationText.Text = place.Name.ToString();
                     mainMap.AnimateCamera(CameraUpdateFactory.NewLatLngZoom(place.LatLng, 15));
+                    centerMarker.SetColorFilter(Color.DarkGreen);
                 }
             }
 
             if (requestCode == 2)
             {
-                if (resultCode == Result.Ok)
+                if (resultCode == Android.App.Result.Ok)
                 {
+                    takeAddressFromSearch = true;
+                    pickupRadio.Checked = false;
+                    destinationRadio.Checked = false;
+
                     var place = Autocomplete.GetPlaceFromIntent(data);
                     destinationText.Text = place.Name.ToString();
                     mainMap.AnimateCamera(CameraUpdateFactory.NewLatLngZoom(place.LatLng, 15));
+                    centerMarker.SetColorFilter(Color.Red);
                 }
             }
         }
