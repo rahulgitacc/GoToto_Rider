@@ -65,6 +65,7 @@
     <Compile Include="Activities\RegisterationActivity.cs" />
     <Compile Include="Activities\SpalashActivity.cs" />
     <Compile Include="EventListeners\TaskCompletionListener.cs" />
+    <Compile Include="Helpers\LocationCallbackHelper.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -123,6 +124,9 @@
     </PackageReference>
     <PackageReference Include="Xamarin.GooglePlayServices.Base">
       <Version>71.1610.4</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.GooglePlayServices.Location">
+      <Version>71.1600.4</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.GooglePlayServices.Maps">
       <Version>71.1610.4</Version>
