@@ -19,6 +19,10 @@
     <item name="colorAccent">@color/goTotoAccentColor</item>
   </style>
 
+  <style name="goTotoTheme.ActionBar.Transparent" parent="goTotoTheme">
+    <item name="colorPrimary">@android:color/transparent</item>
+  </style>
+
   <style name="NavigationStyle" parent="Theme.AppCompat.Light.NoActionBar">
     <item name="colorPrimary">@color/goTotoAccentColor</item>
     <item name="colorPrimaryDark">@color/goTotoAccentColor</item>

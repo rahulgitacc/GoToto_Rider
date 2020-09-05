@@ -17,7 +17,7 @@ namespace GoToto_Rider.Activities
         protected override void OnResume()
         {
             base.OnResume();
-            StartActivity(typeof(LoginActivity));
+            StartActivity(typeof(MainActivity));
         }
     }
 }

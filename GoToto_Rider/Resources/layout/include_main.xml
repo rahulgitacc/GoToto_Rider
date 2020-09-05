@@ -11,21 +11,121 @@
         android:background="@color/goTotoAsh">
 
         <android.support.v7.widget.Toolbar
-			android:id="@+id/mainToolbar"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:minHeight="?android:attr/actionBarSize"
+            android:id="@+id/mainToolbar"
 		/>
 
-        <TextView
-            android:layout_height="wrap_content"
-            android:layout_width="match_parent"
-            android:text="Main layout"
-            android:textSize="20sp"
-            android:gravity="center"
-            android:layout_gravity="center"
+        <LinearLayout
+			android:orientation="vertical"
+			android:layout_height="wrap_content"
+			android:layout_width="match_parent"
+			android:layout_marginLeft="16dp"
+			android:layout_marginRight="16dp"
+			android:layout_marginTop="70dp">
+
+
+            <FrameLayout
+				android:id="@+id/frameLocations"
+				android:layout_width="match_parent"
+				android:layout_height="90dp"
+				android:background="#fff"
+				>
+
+				<LinearLayout
+					android:orientation="vertical"
+					android:layout_height="match_parent"
+					android:layout_width="match_parent">
+
+					<RelativeLayout
+						android:layout_height="1dp"
+						android:layout_width="match_parent"
+						android:clickable="true"
+						android:layout_weight="0.5"
+						android:id="@+id/layoutPickUp">
+
+						<ImageView
+						android:layout_height="8dp"
+							android:layout_width="8dp"
+							android:src="@drawable/greenball"
+							android:layout_centerVertical="true"
+							android:layout_marginLeft="10dp"
+						/>
+
+						<TextView
+						android:id="@+id/pickupLocationText"
+							android:layout_height="wrap_content"
+							android:layout_width="match_parent"
+							android:text="Pickup Location"
+							android:layout_centerVertical="true"
+							android:layout_marginLeft="30dp"
+							android:maxLines="2"
+							android:gravity="center_vertical"
+							android:layout_marginRight="36dp"
 							
 						/>
+
+						<RadioButton
+						android:id="@+id/pickupRadio"
+							android:layout_height="wrap_content"
+							android:layout_width="wrap_content"
+							android:layout_gravity="end"
+							android:layout_alignParentRight="true"
+							android:layout_centerVertical="true"
+							android:layout_marginRight="10dp"
+						/>
+
+						<View
+							android:layout_height="1dp"
+							android:layout_width="match_parent"
+							android:layout_gravity="end"
+							android:layout_alignParentBottom="true"
+							android:background="@color/goTotoAsh"
+						/>
+						</RelativeLayout>
+
+						<RelativeLayout
+						android:layout_height="1dp"
+						android:layout_width="match_parent"
+						android:clickable="true"
+						android:layout_weight="0.5"
+						android:id="@+id/layoutDestination">
+
+						<ImageView
+						android:layout_height="8dp"
+							android:layout_width="8dp"
+							android:src="@drawable/redball"
+							android:layout_centerVertical="true"
+							android:layout_marginLeft="10dp"
+						/>
+
+						<TextView
+						android:id="@+id/destinationText"
+							android:layout_height="wrap_content"
+							android:layout_width="match_parent"
+							android:text="Destination"
+							android:layout_centerVertical="true"
+							android:layout_marginLeft="30dp"
+							android:maxLines="2"
+							android:gravity="center_vertical"
+							android:layout_marginRight="36dp"
+							
+						/>
+
+						<RadioButton
+						android:id="@+id/DestinationRadio"
+							android:layout_height="wrap_content"
+							android:layout_width="wrap_content"
+							android:layout_gravity="end"
+							android:layout_alignParentRight="true"
+							android:layout_centerVertical="true"
+							android:layout_marginRight="10dp"
+						/>
+						</RelativeLayout>
+				</LinearLayout>
+			</FrameLayout>
+        </LinearLayout>
 
     </FrameLayout>
 
