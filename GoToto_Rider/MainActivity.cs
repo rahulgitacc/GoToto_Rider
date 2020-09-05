@@ -7,15 +7,19 @@ using System;
 using Firebase.Database;
 using Firebase;
 using Android.Views;
+using Android.Gms.Maps;
+using Android.Gms.Maps.Model;
 
 namespace GoToto_Rider
 {
     [Activity(Label = "@string/app_name", Theme = "@style/goTotoTheme", MainLauncher = false)]
-    public class MainActivity : AppCompatActivity
+    public class MainActivity : AppCompatActivity, IOnMapReadyCallback
     {
         FirebaseDatabase database;
         Android.Support.V7.Widget.Toolbar mainToolbar;
         Android.Support.V4.Widget.DrawerLayout drawerLayout;
+
+        GoogleMap mainMap;
         protected override void OnCreate(Bundle savedInstanceState)
         {
             base.OnCreate(savedInstanceState);
@@ -23,6 +27,9 @@ namespace GoToto_Rider
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.activity_main);
             ConnectControl();
+
+            SupportMapFragment mapFragment = (SupportMapFragment)SupportFragmentManager.FindFragmentById(Resource.Id.map);
+            mapFragment.GetMapAsync(this);
         }
 
         void ConnectControl()
@@ -85,6 +92,12 @@ namespace GoToto_Rider
             Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+
+        public void OnMapReady(GoogleMap googleMap)
+        {
+            bool success = googleMap.SetMapStyle(MapStyleOptions.LoadRawResourceStyle(this, Resource.Raw.silvermapstyle));
+            mainMap = googleMap;
         }
     }
 }
