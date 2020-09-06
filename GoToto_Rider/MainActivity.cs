@@ -17,6 +17,7 @@ using Android.Content;
 using Google.Places;
 using System.Collections.Generic;
 using Android.Graphics;
+using Android.Support.Design.Widget;
 
 namespace GoToto_Rider
 {
@@ -34,6 +35,8 @@ namespace GoToto_Rider
         TextView destinationText;
 
         //Buttons
+        Button favouritePlacesButton;
+        Button locationSetButton;
         RadioButton pickupRadio;
         RadioButton destinationRadio;
 
@@ -43,6 +46,9 @@ namespace GoToto_Rider
         //Layouts
         RelativeLayout layoutPickUp;
         RelativeLayout layoutDestination;
+
+        //Bottomsheets
+        BottomSheetBehavior tripDetailsBottonsheetBehavior;
 
         readonly string[] permissionGroupLocation = { Manifest.Permission.AccessFineLocation, Manifest.Permission.AccessCoarseLocation };
         const int requestLocationId = 0;
@@ -101,10 +107,14 @@ namespace GoToto_Rider
             pickupLocationText = (TextView)FindViewById(Resource.Id.pickupLocationText);
             destinationText = (TextView)FindViewById(Resource.Id.destinationText);
 
+            favouritePlacesButton = (Button)FindViewById(Resource.Id.favouritePlacesButton);
+            locationSetButton = (Button)FindViewById(Resource.Id.locationsSetButton);
             pickupRadio = (RadioButton)FindViewById(Resource.Id.pickupRadio);
             destinationRadio = (RadioButton)FindViewById(Resource.Id.DestinationRadio);
             pickupRadio.Click += PickupRadio_Click;
             destinationRadio.Click += DestinationRadio_Click;
+            favouritePlacesButton.Click += FavouritePlacesButton_Click;
+            locationSetButton.Click += LocationSetButton_Click;
 
             //Layouts
             layoutPickUp = (RelativeLayout)FindViewById(Resource.Id.layoutPickUp);
@@ -115,6 +125,51 @@ namespace GoToto_Rider
 
             //Imageview
             centerMarker = (ImageView)FindViewById(Resource.Id.centerMarker);
+
+            //Bottomsheet
+            FrameLayout tripDetailsView = (FrameLayout)FindViewById(Resource.Id.tripdetails_bottomsheet);
+            tripDetailsBottonsheetBehavior = BottomSheetBehavior.From(tripDetailsView);
+        }
+
+        void TripLocationsSet()
+        {
+            favouritePlacesButton.Visibility = ViewStates.Invisible;
+            locationSetButton.Visibility = ViewStates.Visible;
+        }
+
+        private async void LocationSetButton_Click(object sender, EventArgs e)
+        {
+            locationSetButton.Text = "Please wait...";
+            locationSetButton.Enabled = false;
+
+            string json;
+            json = await mapHelper.GetDirectionJsonAsync(pickupLocationLatlng, destinationLatLng);
+
+            if (!string.IsNullOrEmpty(json))
+            {
+                TextView txtFare = (TextView)FindViewById(Resource.Id.tripEstimateFareText);
+                TextView txtTime = (TextView)FindViewById(Resource.Id.newTripTimeText);
+
+                mapHelper.DrawTripOnMap(json);
+
+                // Set Estimate Fares and Time
+                txtFare.Text = "$" + mapHelper.EstimateFares().ToString() + " - " + (mapHelper.EstimateFares() + 10).ToString();
+                txtTime.Text = mapHelper.durationstring;
+
+                //Display BottomSheet
+                tripDetailsBottonsheetBehavior.State = BottomSheetBehavior.StateExpanded;
+
+                //DisableViews
+                TripDrawnOnMap();
+            }
+
+            locationSetButton.Text = "Done";
+            locationSetButton.Enabled = true;
+        }
+
+        private void FavouritePlacesButton_Click(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         private void DestinationRadio_Click(object sender, EventArgs e)
@@ -213,9 +268,14 @@ namespace GoToto_Rider
             Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+            
+            if (grantResults.Length > 1)
+            {
+                return;
+            }
             if (grantResults[0] == (int)Android.Content.PM.Permission.Granted)
             {
-                Toast.MakeText(this, "Permission was granted", ToastLength.Short).Show();
+                StartLocationUpdates();
             }
             else
             {
@@ -229,7 +289,17 @@ namespace GoToto_Rider
             mainMap = googleMap;
             mainMap.CameraIdle += MainMap_CameraIdle;
             string mapkey = Resources.GetString(Resource.String.mapkey);
-            mapHelper = new MapFunctionHelper(mapkey);
+            mapHelper = new MapFunctionHelper(mapkey, mainMap);
+        }
+
+        void TripDrawnOnMap()
+        {
+            layoutDestination.Clickable = false;
+            layoutPickUp.Clickable = false;
+            pickupRadio.Enabled = false;
+            destinationRadio.Enabled = false;
+            takeAddressFromSearch = true;
+            centerMarker.Visibility = ViewStates.Invisible;
         }
 
         private async void MainMap_CameraIdle(object sender, EventArgs e)
@@ -245,6 +315,7 @@ namespace GoToto_Rider
                 {
                     destinationLatLng = mainMap.CameraPosition.Target;
                     destinationText.Text = await mapHelper.FindCordinateAddress(destinationLatLng);
+                    TripLocationsSet();
                 }
             }
         }
@@ -322,7 +393,7 @@ namespace GoToto_Rider
                     destinationRadio.Checked = false;
 
                     var place = Autocomplete.GetPlaceFromIntent(data);
-                    pickupLocationText.Text = place.Name.ToString();
+                    pickupLocationText.Text = place.Name.ToString(); pickupLocationLatlng = place.LatLng;
                     mainMap.AnimateCamera(CameraUpdateFactory.NewLatLngZoom(place.LatLng, 15));
                     centerMarker.SetColorFilter(Color.DarkGreen);
                 }
@@ -338,8 +409,10 @@ namespace GoToto_Rider
 
                     var place = Autocomplete.GetPlaceFromIntent(data);
                     destinationText.Text = place.Name.ToString();
+                    destinationLatLng = place.LatLng;
                     mainMap.AnimateCamera(CameraUpdateFactory.NewLatLngZoom(place.LatLng, 15));
                     centerMarker.SetColorFilter(Color.Red);
+                    TripLocationsSet();
                 }
             }
         }
