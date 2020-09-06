@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
@@ -75,6 +76,10 @@ namespace GoToto_Rider.Helpers
 
         public async Task<string> GetDirectionJsonAsync(LatLng location, LatLng destination)
         {
+            var currentCulture = CultureInfo.DefaultThreadCurrentCulture;
+            CultureInfo.DefaultThreadCurrentCulture = new System.Globalization.CultureInfo("en-US");
+            CultureInfo.DefaultThreadCurrentCulture = currentCulture;
+
             //Origin of route
             string str_origin = "origin=" + location.Latitude + "," + location.Longitude;
 

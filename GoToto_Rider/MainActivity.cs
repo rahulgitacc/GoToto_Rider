@@ -18,13 +18,21 @@ using Google.Places;
 using System.Collections.Generic;
 using Android.Graphics;
 using Android.Support.Design.Widget;
+using GoToto_Rider.EventListeners;
+using GoToto_Rider.Fragments;
+using GoToto_Rider.DataModels;
 
 namespace GoToto_Rider
 {
     [Activity(Label = "@string/app_name", Theme = "@style/goTotoTheme", MainLauncher = false)]
     public class MainActivity : AppCompatActivity, IOnMapReadyCallback
     {
-        FirebaseDatabase database;
+
+        //Firebase
+        UserProfileEventListener profileEventListener = new UserProfileEventListener();
+        CreateRequestEventListener requestListener;
+
+        //Views
         Android.Support.V7.Widget.Toolbar mainToolbar;
         Android.Support.V4.Widget.DrawerLayout drawerLayout;
 
@@ -37,6 +45,7 @@ namespace GoToto_Rider
         //Buttons
         Button favouritePlacesButton;
         Button locationSetButton;
+        Button requestDriverButton;
         RadioButton pickupRadio;
         RadioButton destinationRadio;
 
@@ -49,6 +58,9 @@ namespace GoToto_Rider
 
         //Bottomsheets
         BottomSheetBehavior tripDetailsBottonsheetBehavior;
+
+        //Fragments
+        RequestDriver requestDriverFragment;
 
         readonly string[] permissionGroupLocation = { Manifest.Permission.AccessFineLocation, Manifest.Permission.AccessCoarseLocation };
         const int requestLocationId = 0;
@@ -68,7 +80,11 @@ namespace GoToto_Rider
         //TripDetails
         LatLng pickupLocationLatlng;
         LatLng destinationLatLng;
+        string pickupAddress;
+        string destinationAddress;
 
+        //DataModels
+        NewTripDetails newTripDetails;
 
         //Flags
         int addressRequest = 1;
@@ -88,6 +104,7 @@ namespace GoToto_Rider
             GetMyLocation();
             StartLocationUpdates();
             InitializePlaces();
+            profileEventListener.Create();
         }
 
         void ConnectControl()
@@ -109,10 +126,12 @@ namespace GoToto_Rider
 
             favouritePlacesButton = (Button)FindViewById(Resource.Id.favouritePlacesButton);
             locationSetButton = (Button)FindViewById(Resource.Id.locationsSetButton);
+            requestDriverButton = (Button)FindViewById(Resource.Id.requestDriverButton);
             pickupRadio = (RadioButton)FindViewById(Resource.Id.pickupRadio);
             destinationRadio = (RadioButton)FindViewById(Resource.Id.DestinationRadio);
             pickupRadio.Click += PickupRadio_Click;
             destinationRadio.Click += DestinationRadio_Click;
+            requestDriverButton.Click += RequestDriverButton_Click;
             favouritePlacesButton.Click += FavouritePlacesButton_Click;
             locationSetButton.Click += LocationSetButton_Click;
 
@@ -129,6 +148,32 @@ namespace GoToto_Rider
             //Bottomsheet
             FrameLayout tripDetailsView = (FrameLayout)FindViewById(Resource.Id.tripdetails_bottomsheet);
             tripDetailsBottonsheetBehavior = BottomSheetBehavior.From(tripDetailsView);
+        }
+
+        private void RequestDriverButton_Click(object sender, EventArgs e)
+        {
+            requestDriverFragment = new RequestDriver(mapHelper.EstimateFares());
+            requestDriverFragment.Cancelable = false;
+            var trans = SupportFragmentManager.BeginTransaction();
+            requestDriverFragment.Show(trans, "Request");
+
+            newTripDetails = new NewTripDetails();
+            newTripDetails.DestinationAddress = destinationAddress;
+            newTripDetails.PickupAddress = pickupAddress;
+            newTripDetails.DestinationLat = destinationLatLng.Latitude;
+            newTripDetails.DestinationLng = destinationLatLng.Longitude;
+            newTripDetails.DistanceString = mapHelper.distanceString;
+            newTripDetails.DistanceValue = mapHelper.distance;
+            newTripDetails.DurationString = mapHelper.durationstring;
+            newTripDetails.DurationValue = mapHelper.duration;
+            newTripDetails.EstimateFare = mapHelper.EstimateFares();
+            newTripDetails.Paymentmethod = "cash";
+            newTripDetails.PickupLat = pickupLocationLatlng.Latitude;
+            newTripDetails.PickupLng = pickupLocationLatlng.Longitude;
+            newTripDetails.Timestamp = DateTime.Now;
+
+            requestListener = new CreateRequestEventListener(newTripDetails);
+            requestListener.CreateRequest();
         }
 
         void TripLocationsSet()
@@ -153,7 +198,7 @@ namespace GoToto_Rider
                 mapHelper.DrawTripOnMap(json);
 
                 // Set Estimate Fares and Time
-                txtFare.Text = "$" + mapHelper.EstimateFares().ToString() + " - " + (mapHelper.EstimateFares() + 10).ToString();
+                txtFare.Text = "₹" + mapHelper.EstimateFares().ToString() + " - " + (mapHelper.EstimateFares() + 10).ToString();
                 txtTime.Text = mapHelper.durationstring;
 
                 //Display BottomSheet
@@ -236,40 +281,13 @@ namespace GoToto_Rider
             }
         }
 
-        private void BtnTestConnecion_Click(object sender, EventArgs e)
-        {
-            InitialzeDatabase();
-        }
-        void InitialzeDatabase()
-        {
-            var app = FirebaseApp.InitializeApp(this);
-            if (app == null)
-            {
-                var option = new FirebaseOptions.Builder()
-                    .SetApplicationId("go-toto")
-                    .SetApiKey("AIzaSyAAZ5JqcviM30nmGt0R5iYkVUsR8Jiikjc")
-                    .SetDatabaseUrl("https://go-toto.firebaseio.com")
-                    .SetStorageBucket("go-toto.appspot.com")
-                    .Build();
-                app = FirebaseApp.InitializeApp(this, option);
-                database = FirebaseDatabase.GetInstance(app);
-            }
-            else
-            {
-                database = FirebaseDatabase.GetInstance(app);
-            }
-            DatabaseReference dbref = database.GetReference("UserSupport");
-            dbref.SetValue("Ticket1");
-
-            Toast.MakeText(this, "Completed", ToastLength.Short).Show();
-        }
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Android.Content.PM.Permission[] grantResults)
         {
             Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
             
-            if (grantResults.Length > 1)
+            if (grantResults.Length < 1)
             {
                 return;
             }
@@ -309,12 +327,14 @@ namespace GoToto_Rider
                 if (addressRequest == 1)
                 {
                     pickupLocationLatlng = mainMap.CameraPosition.Target;
-                    pickupLocationText.Text = await mapHelper.FindCordinateAddress(pickupLocationLatlng);
+                    pickupAddress = await mapHelper.FindCordinateAddress(pickupLocationLatlng);
+                    pickupLocationText.Text = pickupAddress;
                 }
                 else if (addressRequest == 2)
                 {
                     destinationLatLng = mainMap.CameraPosition.Target;
-                    destinationText.Text = await mapHelper.FindCordinateAddress(destinationLatLng);
+                    destinationAddress = await mapHelper.FindCordinateAddress(destinationLatLng);
+                    destinationText.Text = destinationAddress;
                     TripLocationsSet();
                 }
             }
@@ -393,7 +413,9 @@ namespace GoToto_Rider
                     destinationRadio.Checked = false;
 
                     var place = Autocomplete.GetPlaceFromIntent(data);
-                    pickupLocationText.Text = place.Name.ToString(); pickupLocationLatlng = place.LatLng;
+                    pickupLocationText.Text = place.Name.ToString();
+                    pickupAddress = place.Name.ToString();
+                    pickupLocationLatlng = place.LatLng;
                     mainMap.AnimateCamera(CameraUpdateFactory.NewLatLngZoom(place.LatLng, 15));
                     centerMarker.SetColorFilter(Color.DarkGreen);
                 }
@@ -409,6 +431,7 @@ namespace GoToto_Rider
 
                     var place = Autocomplete.GetPlaceFromIntent(data);
                     destinationText.Text = place.Name.ToString();
+                    destinationAddress = place.Name.ToString();
                     destinationLatLng = place.LatLng;
                     mainMap.AnimateCamera(CameraUpdateFactory.NewLatLngZoom(place.LatLng, 15));
                     centerMarker.SetColorFilter(Color.Red);

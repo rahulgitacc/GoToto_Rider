@@ -1,6 +1,8 @@
 ﻿using System.Threading;
 using Android.App;
 using Android.OS;
+using Firebase.Auth;
+using GoToto_Rider.Helpers;
 
 namespace GoToto_Rider.Activities
 {
@@ -17,7 +19,15 @@ namespace GoToto_Rider.Activities
         protected override void OnResume()
         {
             base.OnResume();
-            StartActivity(typeof(MainActivity));
+            FirebaseUser currentUser = AppDataHelper.GetCurrentUser();
+            if (currentUser == null)
+            {
+                StartActivity(typeof(LoginActivity));
+            }
+            else
+            {
+                StartActivity(typeof(MainActivity));
+            }
         }
     }
 }
