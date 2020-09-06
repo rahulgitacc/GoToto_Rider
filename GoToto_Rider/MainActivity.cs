@@ -156,6 +156,7 @@ namespace GoToto_Rider
             requestDriverFragment.Cancelable = false;
             var trans = SupportFragmentManager.BeginTransaction();
             requestDriverFragment.Show(trans, "Request");
+            requestDriverFragment.CancelRequest += RequestDriverFragment_CancelRequest;
 
             newTripDetails = new NewTripDetails();
             newTripDetails.DestinationAddress = destinationAddress;
@@ -447,6 +448,19 @@ namespace GoToto_Rider
             {
                 PlacesApi.Initialize(this, mapkey);
             }
+        }
+
+        void RequestDriverFragment_CancelRequest(object sender, EventArgs e)
+        {
+            //User cancels request before driver accepts it
+            if (requestDriverFragment != null && requestListener != null)
+            {
+                requestListener.CancelRequest();
+                requestListener = null;
+                requestDriverFragment.Dismiss();
+                requestDriverFragment = null;
+            }
+            StartActivity(typeof(MainActivity));
         }
     }
 }
